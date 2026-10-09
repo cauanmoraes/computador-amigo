@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Computador Amigo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+:root{
+  --ground:#EFF2F1; --surface:#FFFFFF; --surface-2:#E3EAE8;
+  --keycap:#FFFFFF; --keycap-edge:#C3CFCC; --keycap-shadow:rgba(16,34,31,.16);
+  --ink:#16211F; --ink-2:#4A5A57; --ink-3:#788885; --line:#D2DBD9;
+  --accent:#0B6B63; --accent-soft:#DAEDE9; --accent-ink:#0B6B63;
+  --amber:#9C5B12; --amber-bg:#FBE6C6; --amber-edge:#E3A64E;
+  --ok:#2C6E4F; --ok-bg:#DCEDE2; --err:#A62C24; --err-bg:#F7DEDA;
+  --u:clamp(24px,4vw,44px); --kgap:6px; --radius:14px;
+  --typesize:38px;
+  --font-body:"Atkinson Hyperlegible",system-ui,-apple-system,Segoe UI,sans-serif;
+  --font-display:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+html{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 64px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line);padding-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:46px;height:46px;border-radius:12px;background:var(--surface);border:1px solid var(--keycap-edge);box-shadow:0 3px 0 var(--keycap-shadow);display:grid;place-items:center;font-family:var(--font-mono);font-weight:700;color:var(--accent-ink);font-size:19px;flex:none}
+.brand h1{font-size:28px;font-weight:700}
+.brand p{margin:2px 0 0;color:var(--ink-2);font-size:14.5px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.tool{background:var(--surface);border:1px solid var(--line);color:var(--ink-2);border-radius:999px;padding:7px 14px;font-size:14px;display:inline-flex;align-items:center;gap:7px}
+.tool:hover{border-color:var(--accent);color:var(--accent-ink)}
+.tool[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+
+/* lesson rail */
+.rail-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.eyebrow{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.rail{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin}
+.chip{flex:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 14px;text-align:left;color:var(--ink-2);display:flex;align-items:center;gap:9px;font-size:14.5px;white-space:nowrap}
+.chip .num{font-family:var(--font-mono);font-size:12px;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 5px}
+.chip[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.chip[aria-current="true"] .num{color:#fff;border-color:rgba(255,255,255,.5)}
+.chip.done .num{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.chip:hover{border-color:var(--accent)}
+
+/* practice card */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+.lesson-head{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.lesson-head h2{font-size:22px}
+.progress-line{font-family:var(--font-mono);font-size:13px;color:var(--ink-3)}
+.goal{color:var(--ink-2);margin:0 0 16px;max-width:62ch}
+.tip{display:flex;gap:11px;background:var(--accent-soft);border-radius:10px;padding:12px 14px;color:var(--ink);font-size:15px;margin-bottom:20px;max-width:70ch}
+.tip b{color:var(--accent-ink)}
+
+.stage{position:relative;background:var(--surface-2);border-radius:12px;padding:26px 22px;min-height:150px;display:flex;align-items:center;justify-content:center}
+.target{font-family:var(--font-mono);font-size:var(--typesize);line-height:1.6;letter-spacing:.01em;word-break:break-word;text-align:center;max-width:100%}
+.target span{border-radius:3px;padding:1px 0}
+.target .done{color:var(--ok)}
+.target .todo{color:var(--ink-3)}
+.target .cur{color:var(--ink);background:var(--amber-bg);box-shadow:0 3px 0 var(--amber-edge);border-radius:4px}
+.target .cur.bad{background:var(--err-bg);box-shadow:0 3px 0 var(--err);color:var(--err)}
+.target .sp{white-space:pre}
+.shake{animation:shk .22s}
+@keyframes shk{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media (prefers-reduced-motion:reduce){.shake{animation:none}}
+#catcher{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.veil{position:absolute;inset:0;display:grid;place-items:center;background:var(--surface-2);border-radius:12px;text-align:center;padding:20px;gap:6px}
+.veil[hidden]{display:none}
+.veil strong{font-family:var(--font-display);font-size:20px;display:block}
+.veil span{color:var(--ink-2);font-size:15px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:16px}
+.stat{background:var(--surface-2);border-radius:10px;padding:12px 14px}
+.stat .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.stat .v{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;line-height:1.2}
+.stat.ok .v{color:var(--ok)} .stat.warn .v{color:var(--err)}
+
+/* keyboard */
+.kb-wrap{overflow-x:auto;padding-bottom:6px}
+.kb{display:flex;flex-direction:column;gap:var(--kgap);width:max-content;margin:0 auto;padding:14px;background:var(--surface-2);border-radius:14px}
+.kb.hidden{display:none}
+.krow{display:flex;gap:var(--kgap)}
+.key{width:var(--u);height:var(--u);border-radius:9px;background:var(--keycap);border:1px solid var(--keycap-edge);box-shadow:0 2px 0 var(--keycap-shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:calc(var(--u)*.34);color:var(--ink-2);font-family:var(--font-body);line-height:1.05;flex:none;transition:background .1s,color .1s}
+.key .up{font-size:calc(var(--u)*.26);color:var(--ink-3)}
+.key.wide{font-size:calc(var(--u)*.24);color:var(--ink-3)}
+.key.next{background:var(--amber-bg);border-color:var(--amber-edge);box-shadow:0 2px 0 var(--amber-edge);color:var(--amber);font-weight:700;transform:translateY(1px)}
+.key.next .up{color:var(--amber)}
+.key.wrong{background:var(--err-bg);border-color:var(--err);color:var(--err)}
+.key.homing::after{content:"";display:block;width:40%;height:2px;background:var(--ink-3);border-radius:2px;margin-top:2px}
+.fingers .key.L{background:color-mix(in srgb,var(--accent-soft) 75%,var(--keycap))}
+.fingers .key.R{background:color-mix(in srgb,var(--amber-bg) 55%,var(--keycap))}
+.fingers .key.next{background:var(--amber-bg)}
+.hint{text-align:center;color:var(--ink-2);font-size:15.5px;margin-top:12px;min-height:24px}
+.hint b{color:var(--accent-ink)}
+
+/* result */
+.result{display:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+.result.show{display:block}
+.result h2{font-size:24px;margin-bottom:4px}
+.result p{color:var(--ink-2);margin:0 0 18px}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:10px;padding:12px 20px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--accent-ink)}
+.btn:hover{filter:brightness(1.06)}
+
+details.guide{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px}
+details.guide summary{font-family:var(--font-display);font-weight:700;font-size:18px;cursor:pointer}
+details.guide ul{color:var(--ink-2);padding-left:20px;max-width:70ch}
+details.guide li{margin-bottom:7px}
+footer{color:var(--ink-3);font-size:13.5px;text-align:center;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:560px){
+  .brand h1{font-size:23px}
+  .card{padding:16px}
+  .stage{padding:18px 12px}
+}
+
+/* ================= navegação e tela inicial ================= */
+.screen[hidden]{display:none!important}
+.backbar{max-width:940px;margin:0 auto;padding:20px 20px 0}
+.back{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:8px 16px;color:var(--ink-2);font-size:14.5px;font-weight:700}
+.back:hover{border-color:var(--accent);color:var(--accent-ink)}
+
+.hero{padding:22px 0 6px}
+.hero .kicker{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.hero h1{font-size:clamp(34px,6vw,52px);font-weight:700;margin:10px 0 12px;line-height:1.05}
+.hero p{color:var(--ink-2);font-size:18px;max-width:56ch;margin:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.app-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;text-align:left;color:var(--ink);display:flex;flex-direction:column;gap:14px;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
+.app-card:hover,.app-card:focus-visible{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 10px 30px -18px var(--keycap-shadow)}
+@media (prefers-reduced-motion:reduce){.app-card{transition:none}.app-card:hover{transform:none}}
+.app-card .thumb{height:110px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;color:var(--accent-ink)}
+.app-card h3{font-size:25px;font-weight:700}
+.app-card .sub{color:var(--ink-2);font-size:16px;margin:-6px 0 0}
+.app-card ul{margin:0;padding-left:19px;color:var(--ink-2);font-size:15px;display:flex;flex-direction:column;gap:5px}
+.app-card .open{margin-top:auto;align-self:flex-start;background:var(--accent);color:#fff;border-radius:10px;padding:11px 20px;font-weight:700;font-size:16px}
+.howto{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px}
+.howto h4{font-family:var(--font-display);margin:0 0 8px;font-size:17px}
+.howto p{margin:0;color:var(--ink-2);max-width:70ch;font-size:15.5px}
+
+/* ================= planilha ================= */
+.sheetlayout{display:grid;grid-template-columns:330px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.sheetlayout{grid-template-columns:1fr}}
+.mission h2{font-size:21px;margin-bottom:8px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;counter-reset:s}
+.steps li{display:flex;gap:11px;align-items:flex-start;font-size:15.5px;color:var(--ink-3);line-height:1.45}
+.steps li .box{flex:none;width:23px;height:23px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:700;margin-top:1px}
+.steps li.now{color:var(--ink);font-weight:700}
+.steps li.now .box{border-color:var(--amber-edge);background:var(--amber-bg);color:var(--amber)}
+.steps li.ok{color:var(--ink-3)}
+.steps li.ok .box{border-color:transparent;background:var(--ok-bg);color:var(--ok)}
+.steps li.ok .txt{text-decoration:line-through;text-decoration-thickness:1px}
+.donemsg{margin-top:16px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:14px;font-weight:700;font-size:15.5px}
+.donemsg[hidden]{display:none}
+
+.sheetcard{padding:14px}
+.ribbon{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.rb{background:var(--surface);border:1px solid var(--line);border-radius:8px;min-width:38px;height:36px;padding:0 11px;color:var(--ink-2);font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.rb:hover{border-color:var(--accent);color:var(--accent-ink)}
+.rb.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+.rb b{font-family:var(--font-display)}
+.rb.sw{width:30px;min-width:30px;height:30px;padding:0;border-radius:7px}
+.rbsep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.rbgroup{display:flex;gap:5px;align-items:center}
+
+.fxbar{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.cellref{font-family:var(--font-mono);font-size:14px;font-weight:700;background:var(--surface-2);border-radius:7px;padding:6px 10px;min-width:56px;text-align:center;color:var(--ink)}
+.fxsign{font-family:var(--font-display);font-style:italic;font-weight:700;color:var(--ink-3);padding:0 2px}
+#xFx{flex:1;min-width:0;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);font-family:var(--font-mono);font-size:15px;padding:7px 10px}
+#xFx:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+
+.sheet-wrap{overflow:auto;max-height:min(58vh,520px);margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.sheet-wrap:focus{outline:2px solid var(--accent);outline-offset:-2px}
+table.sheet{border-collapse:separate;border-spacing:0;table-layout:fixed}
+table.sheet th{background:var(--surface-2);color:var(--ink-2);font-family:var(--font-body);font-weight:700;font-size:12.5px;position:sticky;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 0;z-index:1}
+th.colh{top:0;width:104px}
+th.rowh{left:0;width:42px;z-index:2}
+th.corner{top:0;left:0;z-index:3;width:42px}
+th.hl{background:var(--accent-soft);color:var(--accent-ink)}
+table.sheet td{width:104px;height:34px;max-width:104px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0 8px;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink);background:var(--surface);cursor:cell}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+td.bold{font-weight:700}
+td.ital{font-style:italic}
+td.err{color:var(--err);font-weight:700}
+td.sel{box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+td.bg1{background:#FBE6C6}td.bg2{background:#DCEDE2}td.bg3{background:#F7DEDA}td.bg4{background:#DDE7F5}
+td.bg1.sel,td.bg2.sel,td.bg3.sel,td.bg4.sel{box-shadow:inset 0 0 0 2px var(--accent)}
+td .cellinput{width:100%;height:30px;border:0;background:transparent;color:var(--ink);font-family:var(--font-mono);font-size:15px;padding:0}
+td .cellinput:focus{outline:none}
+.statusbar{margin-top:10px;font-size:14.5px;color:var(--ink-2);min-height:22px}
+.statusbar code{font-family:var(--font-mono);background:var(--surface-2);border-radius:5px;padding:1px 5px;font-size:13.5px}
+.keyshelp{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-size:13.5px;color:var(--ink-3)}
+.keyshelp kbd{font-family:var(--font-mono);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12.5px;color:var(--ink-2)}
+</style>
+<section class="screen" id="scr-home">
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <div class="mark">CA</div>
+        <div>
+          <h1 style="font-size:26px">Computador Amigo</h1>
+          <p>Dois treinos práticos para quem está começando</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="hero">
+      <span class="kicker">Escolha por onde começar</span>
+      <h1>Aprender no computador, sem pressa e sem medo de errar.</h1>
+      <p>Nenhum dos dois treinos estraga nada nem precisa de internet. Se errar, é só tentar de novo — os exercícios esperam o tempo de cada um.</p>
+    </div>
+
+    <div class="cards">
+      <button class="app-card" data-go="teclado">
+        <div class="thumb" aria-hidden="true">
+          <svg width="150" height="76" viewBox="0 0 150 76" fill="none">
+            <rect x="1" y="1" width="148" height="74" rx="10" stroke="currentColor" stroke-width="1.5" opacity=".35"/>
+            <g fill="currentColor" opacity=".22">
+              <rect x="12" y="13" width="16" height="14" rx="3"/><rect x="32" y="13" width="16" height="14" rx="3"/>
+              <rect x="52" y="13" width="16" height="14" rx="3"/><rect x="72" y="13" width="16" height="14" rx="3"/>
+              <rect x="92" y="13" width="16" height="14" rx="3"/><rect x="112" y="13" width="26" height="14" rx="3"/>
+              <rect x="12" y="31" width="16" height="14" rx="3"/><rect x="52" y="31" width="16" height="14" rx="3"/>
+              <rect x="72" y="31" width="16" height="14" rx="3"/><rect x="92" y="31" width="16" height="14" rx="3"/>
+              <rect x="112" y="31" width="26" height="14" rx="3"/>
+              <rect x="12" y="49" width="26" height="14" rx="3"/><rect x="80" y="49" width="58" height="14" rx="3"/>
+            </g>
+            <rect x="32" y="31" width="16" height="14" rx="3" fill="currentColor"/>
+            <rect x="42" y="49" width="34" height="14" rx="3" fill="currentColor" opacity=".22"/>
+          </svg>
+        </div>
+        <h3>Teclado Amigo</h3>
+        <p class="sub">Treino de digitação em 11 lições</p>
+        <ul>
+          <li>Mostra qual tecla apertar e com qual dedo</li>
+          <li>Acentos, cedilha, maiúsculas e pontuação</li>
+          <li>Termina com palavras e frases do Word e do Excel</li>
+        </ul>
+        <span class="open">Abrir treino de digitação</span>
+      </button>
+
+      <button class="app-card" data-go="planilha">
+        <div class="thumb" aria-hidden="true">
+          <svg width="150" height="76" viewBox="0 0 150 76" fill="none">
+            <rect x="1" y="1" width="148" height="74" rx="10" stroke="currentColor" stroke-width="1.5" opacity=".35"/>
+            <g stroke="currentColor" stroke-width="1.2" opacity=".3">
+              <path d="M12 24h126M12 42h126M12 60h126M48 12v52M84 12v52M114 12v52"/>
+            </g>
+            <rect x="12" y="12" width="126" height="12" fill="currentColor" opacity=".18"/>
+            <rect x="84" y="42" width="30" height="18" fill="currentColor" opacity=".9"/>
+            <text x="88" y="55" font-family="monospace" font-size="11" fill="var(--surface-2)">Σ</text>
+          </svg>
+        </div>
+        <h3>Planilha Amiga</h3>
+        <p class="sub">Treino de Excel em 9 missões</p>
+        <ul>
+          <li>Uma planilha de verdade: células, fórmulas e formatação</li>
+          <li>Ensina =SOMA, MÉDIA, MÁXIMO, MÍNIMO e formato R$</li>
+          <li>Confere sozinha cada passo e avisa quando acertou</li>
+        </ul>
+        <span class="open">Abrir treino de planilha</span>
+      </button>
+    </div>
+
+    <div class="howto">
+      <h4>Antes de começar</h4>
+      <p>O ideal é 15 minutos por dia, sempre no mesmo horário. Comece pelo Teclado Amigo até a lição 5 e só depois abra a Planilha Amiga — digitar com alguma soltura deixa o treino de Excel bem mais leve. Dá para voltar a esta tela a qualquer momento pelo botão <b>Início</b>.</p>
+    </div>
+
+    <footer>Feito para computador com teclado brasileiro (ABNT2) · Funciona sem internet</footer>
+  </div>
+</section>
+
+<section class="screen" id="scr-teclado" hidden>
+  <div class="backbar"><button class="back" data-go="home">◀ Início</button></div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="mark">FJ</div>
+      <div>
+        <h1>Teclado Amigo</h1>
+        <p>Treino de digitação passo a passo, no seu ritmo</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="tool" id="btnFingers" aria-pressed="false">Cores das mãos</button>
+      <button class="tool" id="btnKb" aria-pressed="true">Mostrar teclado</button>
+      <button class="tool" id="btnSmaller" title="Diminuir a letra">A−</button>
+      <button class="tool" id="btnBigger" title="Aumentar a letra">A+</button>
+    </div>
+  </header>
+
+  <section>
+    <div class="rail-head">
+      <span class="eyebrow">Trilha de lições — siga na ordem</span>
+      <span class="eyebrow" id="doneCount"></span>
+    </div>
+    <div class="rail" id="rail"></div>
+  </section>
+
+  <section class="card" id="practice">
+    <div class="lesson-head">
+      <h2 id="lTitle"></h2>
+      <span class="progress-line" id="lProgress"></span>
+    </div>
+    <p class="goal" id="lGoal"></p>
+    <div class="tip"><b>Dica</b><span id="lTip"></span></div>
+
+    <div class="stage" id="stage">
+      <div class="target" id="target" aria-live="off"></div>
+      <input id="catcher" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Área de digitação">
+      <div class="veil" id="veil">
+        <div>
+          <strong>Clique aqui para começar</strong>
+          <span>Depois é só digitar o que aparecer na tela</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">Velocidade</div><div class="v"><span id="sWpm">0</span> <span style="font-size:14px;font-weight:400;color:var(--ink-3)">ppm</span></div></div>
+      <div class="stat" id="accBox"><div class="k">Precisão</div><div class="v"><span id="sAcc">100</span>%</div></div>
+      <div class="stat"><div class="k">Tempo</div><div class="v" id="sTime">0:00</div></div>
+      <div class="stat"><div class="k">Erros</div><div class="v" id="sErr">0</div></div>
+    </div>
+
+    <div class="hint" id="hint" aria-live="polite"></div>
+    <div class="kb-wrap"><div class="kb" id="kb"></div></div>
+  </section>
+
+  <section class="result" id="result" aria-live="polite"></section>
+
+  <details class="guide">
+    <summary>Como usar (leia antes da primeira vez)</summary>
+    <ul>
+      <li><b>Ache as marquinhas.</b> As teclas <b>F</b> e <b>J</b> têm um relevo. Apoie os indicadores nelas — é o ponto de partida de todas as lições.</li>
+      <li><b>Olhe para a tela, não para as mãos.</b> Se travar, use o desenho do teclado: a tecla que você precisa apertar fica destacada em laranja.</li>
+      <li><b>Errou? Nada acontece.</b> O treino só avança quando a tecla certa é apertada. Não tem como estragar nada.</li>
+      <li><b>Devagar primeiro.</b> Velocidade vem sozinha depois que os dedos aprendem o caminho. Precisão acima de 95% é o objetivo.</li>
+      <li><b>10 a 15 minutos por dia</b> rendem mais que uma hora de uma vez só.</li>
+      <li>Ombros relaxados, pulsos soltos (sem apoiar na mesa), tela na altura dos olhos.</li>
+    </ul>
+  </details>
+
+  <footer>Feito para treinar digitação em teclado brasileiro (ABNT2) · Funciona sem internet</footer>
+</div>
+</section>
+<section class="screen" id="scr-planilha" hidden>
+  <div class="backbar"><button class="back" data-go="home">◀ Início</button></div>
+  <div class="wrap" style="padding-top:16px">
+    <header class="top">
+      <div class="brand">
+        <div class="mark" style="font-style:italic">fx</div>
+        <div>
+          <h1>Planilha Amiga</h1>
+          <p>Aprenda Excel fazendo, uma missão de cada vez</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="tool" id="xUndo">↩ Desfazer</button>
+        <button class="tool" id="xReset">Recomeçar a missão</button>
+      </div>
+    </header>
+
+    <section>
+      <div class="rail-head">
+        <span class="eyebrow">Missões — siga na ordem</span>
+        <span class="eyebrow" id="xDone"></span>
+      </div>
+      <div class="rail" id="xRail"></div>
+    </section>
+
+    <div class="sheetlayout">
+      <aside class="card mission">
+        <h2 id="xTitle"></h2>
+        <p class="goal" id="xGoal"></p>
+        <div class="tip"><b>Dica</b><span id="xTip"></span></div>
+        <ol class="steps" id="xSteps"></ol>
+        <div class="donemsg" id="xDoneMsg" hidden></div>
+      </aside>
+
+      <div class="card sheetcard">
+        <div class="ribbon">
+          <div class="rbgroup">
+            <button class="rb" id="xB" title="Negrito"><b>N</b></button>
+            <button class="rb" id="xI" title="Itálico"><i>I</i></button>
+          </div>
+          <span class="rbsep"></span>
+          <div class="rbgroup">
+            <button class="rb" id="xMoeda" title="Formato de dinheiro">R$</button>
+            <button class="rb" id="xPorc" title="Formato de porcentagem">%</button>
+            <button class="rb" id="xGeral" title="Voltar ao formato normal">Normal</button>
+          </div>
+          <span class="rbsep"></span>
+          <div class="rbgroup" id="xColors">
+            <button class="rb sw" data-bg="bg1" title="Amarelo" style="background:#FBE6C6"></button>
+            <button class="rb sw" data-bg="bg2" title="Verde" style="background:#DCEDE2"></button>
+            <button class="rb sw" data-bg="bg3" title="Rosa" style="background:#F7DEDA"></button>
+            <button class="rb sw" data-bg="bg4" title="Azul" style="background:#DDE7F5"></button>
+            <button class="rb sw" data-bg="" title="Sem cor">✕</button>
+          </div>
+          <span class="rbsep"></span>
+          <button class="rb" id="xClear" title="Apagar o conteúdo da célula">Apagar</button>
+        </div>
+
+        <div class="fxbar">
+          <span class="cellref" id="xRef">A1</span>
+          <span class="fxsign">fx</span>
+          <input id="xFx" autocomplete="off" spellcheck="false" aria-label="Barra de fórmulas">
+        </div>
+
+        <div class="sheet-wrap" id="xWrap" tabindex="0" aria-label="Planilha">
+          <table class="sheet" id="xGrid"></table>
+        </div>
+
+        <div class="statusbar" id="xStatus"></div>
+        <div class="keyshelp">
+          <span><kbd>↑ ↓ ← →</kbd> anda pelas células</span>
+          <span><kbd>Enter</kbd> confirma</span>
+          <span><kbd>Delete</kbd> apaga</span>
+          <span><kbd>Ctrl</kbd>+<kbd>C</kbd> copia</span>
+          <span><kbd>Ctrl</kbd>+<kbd>V</kbd> cola</span>
+          <span><kbd>Esc</kbd> cancela</span>
+        </div>
+      </div>
+    </div>
+
+    <details class="guide">
+      <summary>Como funciona a planilha (leia antes da primeira vez)</summary>
+      <ul>
+        <li><b>Célula</b> é cada quadradinho. O nome dela vem da coluna e da linha: a coluna <b>B</b> com a linha <b>3</b> é a célula <b>B3</b>.</li>
+        <li><b>Toda conta começa com o sinal de igual.</b> Digitar <code>=2+3</code> mostra 5. Digitar só <code>2+3</code> deixa o texto ali parado.</li>
+        <li><b>Fórmula usa o nome da célula, não o número.</b> <code>=B2+B3</code> continua certo mesmo se você trocar os valores depois.</li>
+        <li><b>Dois pontos querem dizer "até".</b> <code>=SOMA(B2:B6)</code> soma tudo de B2 até B6.</li>
+        <li><b>Números com vírgula:</b> escreva <code>12,50</code> — do mesmo jeito que no Excel em português.</li>
+        <li>Errou? <b>Desfazer</b> volta atrás, e <b>Recomeçar a missão</b> devolve a planilha ao começo.</li>
+      </ul>
+    </details>
+
+    <footer>Planilha de treino · Funciona sem internet · Os comandos são os mesmos do Excel</footer>
+  </div>
+</section>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- lições ---------- */
+var LESSONS = [
+ {t:"Posição de descanso", g:"Os oito dedos ficam parados sobre a linha do meio: A S D F para a mão esquerda, J K L Ç para a direita.",
+  tip:"Apoie os indicadores nas teclas F e J (elas têm um relevo). Os polegares descansam na barra de espaço.",
+  lines:["asdf jklç asdf jklç","aaa sss ddd fff","jjj kkk lll ççç","as ja df kl fa jl","sad ask lala fada"]},
+ {t:"As teclas G e H", g:"Os indicadores esticam um pouquinho para o lado e voltam para F e J.",
+  tip:"Depois de apertar G ou H, traga o dedo de volta para a tecla de apoio. O dedo sempre volta para casa.",
+  lines:["fg jh fg jh gf hj","ggg hhh gh hg gh","gala fala lasca","haja saga alagada","ah gag lag fada"]},
+ {t:"Primeiras palavras", g:"Palavras inteiras usando só a linha do meio. Aqui os dedos começam a andar sozinhos.",
+  tip:"Leia a palavra toda antes de digitar. Depois digite sem parar no meio.",
+  lines:["sala fala asas gala","fada lada haja saga","a ala da sala","as asas da gala","fala alta"]},
+ {t:"Linha de cima", g:"Q W E R T Y U I O P — cada dedo sobe uma casa e volta.",
+  tip:"O dedo que sobe é sempre o mesmo que fica embaixo: o dedo do A sobe para o Q, o do S sobe para o W, e assim por diante.",
+  lines:["qwert yuiop","que tia sua rio","porta letra tarde","quarto papel grupo","o tio quer a porta"]},
+ {t:"Linha de baixo", g:"Z X C V B N M — agora os dedos descem uma casa.",
+  tip:"Descer costuma ser mais difícil que subir. Vá bem devagar nesta lição.",
+  lines:["zxcv bnm","zxc vbn mzx","campo banco livro","nuvem verbo vizinho","com o mesmo banco"]},
+ {t:"Letras maiúsculas", g:"Shift é a tecla das maiúsculas. Use sempre o Shift do lado oposto da letra.",
+  tip:"Letra da mão direita? Shift da esquerda. Letra da esquerda? Shift da direita. Segure o Shift, aperte a letra, solte.",
+  lines:["Ana Bruno Carla","Brasil Salvador Bahia","O Sol nasce cedo.","Maria Luiza Pereira","O Brasil tem muitas cidades."]},
+ {t:"Acentos e cedilha", g:"No teclado brasileiro o acento vem antes da letra: aperta o acento, depois a vogal.",
+  tip:"Para á: aperte a tecla ´ (à direita do P) e em seguida a letra A. Para ã: aperte ~ e depois A. O Ç tem tecla própria, ao lado do L.",
+  lines:["á é í ó ú ã õ ç","avó café país","ação coração","também não é fácil","informação e segurança"]},
+ {t:"Números e pontuação", g:"A linha de cima do teclado e os sinais mais usados no dia a dia.",
+  tip:"Para digitar R$ segure o Shift e aperte o 4. Para os dois pontos, Shift e a tecla do ponto e vírgula.",
+  lines:["1 2 3 4 5 6 7 8 9 0","dia 30/08/2026","R$ 25,00 e R$ 130,50","Total: 12 itens.","Ligue: 71 3333-4444"]},
+ {t:"Palavras do Word, Excel e PowerPoint", g:"O vocabulário que aparece nos menus e botões desses programas.",
+  tip:"Reconhecer essas palavras escritas ajuda a achar os botões mais rápido na tela.",
+  lines:["salvar arquivo pasta","planilha célula fórmula","gráfico coluna linha","slide apresentação modelo","copiar colar imprimir"]},
+ {t:"Frases do dia a dia", g:"Frases completas, do jeito que aparecem em um e-mail ou anotação de trabalho.",
+  tip:"Mantenha o ritmo constante. É melhor devagar e sem erro do que rápido e tropeçando.",
+  lines:["Vou salvar o arquivo na pasta Documentos.","Preciso somar a coluna B da planilha.","O slide 3 está com a letra muito pequena.","Bom dia! Segue o relatório em anexo.","Já imprimi as duas páginas do texto."]},
+ {t:"Texto corrido", g:"Um parágrafo inteiro, com tudo o que você já treinou junto.",
+  tip:"Se cansar, pare, respire e comece de novo. Não tem pressa nem nota.",
+  lines:["Escrever no computador fica fácil com prática.","Cada dia de treino deixa os dedos mais soltos.","Hoje eu já consigo digitar sem olhar o teclado.","Salvei a planilha e enviei para a coordenação."]}
+];
+
+/* ---------- teclado ABNT2 ---------- */
+var L="L",R="R";
+var ROWS=[
+ [["'",'"',1,L,"lp"],["1","!",1,L,"lp"],["2","@",1,L,"lr"],["3","#",1,L,"lm"],["4","$",1,L,"li"],["5","%",1,L,"li"],["6","\u00A8",1,R,"ri"],["7","&",1,R,"ri"],["8","*",1,R,"rm"],["9","(",1,R,"rr"],["0",")",1,R,"rp"],["-","_",1,R,"rp"],["=","+",1,R,"rp"],["#Back","\u232B Apagar",2,R,"rp"]],
+ [["#Tab","Tab",1.5,L,"lp"],["q","Q",1,L,"lp"],["w","W",1,L,"lr"],["e","E",1,L,"lm"],["r","R",1,L,"li"],["t","T",1,L,"li"],["y","Y",1,R,"ri"],["u","U",1,R,"ri"],["i","I",1,R,"rm"],["o","O",1,R,"rr"],["p","P",1,R,"rp"],["\u00B4","`",1,R,"rp"],["[","{",1,R,"rp"],["#Sp1","",1.5,R,""]],
+ [["#Caps","Caps",1.75,L,"lp"],["a","A",1,L,"lp"],["s","S",1,L,"lr"],["d","D",1,L,"lm"],["f","F",1,L,"li"],["g","G",1,L,"li"],["h","H",1,R,"ri"],["j","J",1,R,"ri"],["k","K",1,R,"rm"],["l","L",1,R,"rr"],["\u00E7","\u00C7",1,R,"rp"],["~","^",1,R,"rp"],["]","}",1,R,"rp"],["#Enter","Enter",1.25,R,"rp"]],
+ [["#LShift","\u21E7 Shift",1.5,L,"lp"],["\\","|",1,L,"lp"],["z","Z",1,L,"lp"],["x","X",1,L,"lr"],["c","C",1,L,"lm"],["v","V",1,L,"li"],["b","B",1,L,"li"],["n","N",1,R,"ri"],["m","M",1,R,"ri"],[",","<",1,R,"rm"],[".",">",1,R,"rr"],[";",":",1,R,"rp"],["/","?",1,R,"rp"],["#RShift","\u21E7 Shift",1.5,R,"rp"]],
+ [["#Ctrl","Ctrl",1.5,L,""],["#Win","",1.25,L,""],["#Alt","Alt",1.25,L,""],[" ","Espaço",6.5,L,"th"],["#AltGr","Alt Gr",1.25,R,""],["#Fn","",1.25,R,""],["#Ctrl2","Ctrl",1.5,R,""],["#Sp2","",0.5,R,""]]
+];
+var FINGER={lp:"o dedo mindinho esquerdo",lr:"o dedo anelar esquerdo",lm:"o dedo médio esquerdo",li:"o dedo indicador esquerdo",ri:"o dedo indicador direito",rm:"o dedo médio direito",rr:"o dedo anelar direito",rp:"o dedo mindinho direito",th:"o polegar"};
+var CHARMAP={},KEYEL={},KEYINFO={};
+ROWS.forEach(function(row){row.forEach(function(k){
+  var id=k[0];KEYINFO[id]={finger:k[4],hand:k[3],label:k[1]};
+  if(id.charAt(0)!=="#"){
+    CHARMAP[id]={id:id,shift:false};
+    if(k[1]&&k[1].length===1&&k[1]!==id) CHARMAP[k[1]]={id:id,shift:true};
+  }
+});});
+CHARMAP[" "]={id:" ",shift:false};
+var DEAD={"\u0301":{id:"\u00B4",shift:false},"\u0300":{id:"\u00B4",shift:true},"\u0303":{id:"~",shift:false},"\u0302":{id:"~",shift:true},"\u0308":{id:"6",shift:true}};
+
+function steps(ch){
+  if(CHARMAP[ch]) return [CHARMAP[ch]];
+  var d=ch.normalize("NFD");
+  if(d.length===2&&DEAD[d[1]]){
+    var base=CHARMAP[d[0]];
+    if(base) return [DEAD[d[1]],base];
+  }
+  return [];
+}
+
+/* ---------- estado ---------- */
+var S={li:0,line:0,pos:0,errs:0,hits:0,t0:null,dead:false,done:[],running:false};
+var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+try{var raw=store.get("teclado-amigo-v1");if(raw){var o=JSON.parse(raw);if(o&&o.done)S.done=o.done;if(typeof o.li==="number")S.li=Math.min(o.li,LESSONS.length-1);}}catch(e){}
+function save(){store.set("teclado-amigo-v1",JSON.stringify({done:S.done,li:S.li}));}
+
+var $=function(id){return document.getElementById(id);};
+var elTarget=$("target"),elKb=$("kb"),elHint=$("hint"),elCatch=$("catcher"),elVeil=$("veil"),elStage=$("stage"),elResult=$("result");
+
+/* ---------- teclado visual ---------- */
+function buildKb(){
+  elKb.innerHTML="";
+  ROWS.forEach(function(row){
+    var r=document.createElement("div");r.className="krow";
+    row.forEach(function(k){
+      var id=k[0],w=k[2],d=document.createElement("div");
+      d.className="key "+k[3]+(w>1.2?" wide":"")+((id==="f"||id==="j")?" homing":"");
+      d.style.width="calc(var(--u)*"+w+" + var(--kgap)*"+(w-1)+")";
+      if(id.charAt(0)==="#"){d.textContent=k[1];d.style.opacity=k[1]?"1":".55";}
+      else if(id===" "){d.textContent="Espaço";}
+      else{
+        var up=k[1]&&k[1]!==id&&k[1]!==id.toUpperCase();
+        if(up){var s=document.createElement("span");s.className="up";s.textContent=k[1];d.appendChild(s);}
+        var b=document.createElement("span");b.textContent=id.toUpperCase();d.appendChild(b);
+      }
+      KEYEL[id]=d;r.appendChild(d);
+    });
+    elKb.appendChild(r);
+  });
+}
+function clearKeys(cls){for(var id in KEYEL)KEYEL[id].classList.remove(cls);}
+function highlight(){
+  clearKeys("next");
+  var line=LESSONS[S.li].lines[S.line];
+  if(S.pos>=line.length){elHint.textContent="";return;}
+  var ch=line[S.pos],st=steps(ch);
+  if(!st.length){elHint.textContent="";return;}
+  var step=st[(S.dead&&st.length>1)?1:0];
+  var el=KEYEL[step.id];
+  if(el)el.classList.add("next");
+  if(step.shift){
+    var side=KEYINFO[step.id].hand==="L"?"#RShift":"#LShift";
+    if(KEYEL[side])KEYEL[side].classList.add("next");
+  }
+  var f=FINGER[KEYINFO[step.id].finger]||"o dedo mais próximo";
+  var name=step.id===" "?"a barra de espaço":"a tecla "+(step.shift?KEYINFO[step.id].label:step.id.toUpperCase());
+  elHint.innerHTML=(step.shift&&step.id!==" "?"Segure <b>Shift</b> e aperte ":"Aperte ")+"<b>"+name+"</b> com "+f+".";
+}
+
+/* ---------- render ---------- */
+function renderRail(){
+  var rail=$("rail");rail.innerHTML="";
+  LESSONS.forEach(function(l,i){
+    var b=document.createElement("button");
+    b.className="chip"+(S.done.indexOf(i)>=0?" done":"");
+    b.setAttribute("aria-current",i===S.li?"true":"false");
+    b.innerHTML='<span class="num">'+(S.done.indexOf(i)>=0?"\u2713":(i+1))+'</span>'+l.t;
+    b.onclick=function(){loadLesson(i);};
+    rail.appendChild(b);
+  });
+  $("doneCount").textContent=S.done.length+" de "+LESSONS.length+" concluídas";
+}
+function renderLine(bad){
+  var line=LESSONS[S.li].lines[S.line],h="";
+  for(var i=0;i<line.length;i++){
+    var c=line[i],cls=i<S.pos?"done":(i===S.pos?"cur"+(bad?" bad":""):"todo");
+    var txt=c===" "?"\u00A0":c.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+    h+='<span class="'+cls+(c===" "?" sp":"")+'">'+txt+"</span>";
+  }
+  elTarget.innerHTML=h;
+  $("lProgress").textContent="Exercício "+(S.line+1)+" de "+LESSONS[S.li].lines.length;
+  highlight();
+}
+function loadLesson(i){
+  S.li=i;S.line=0;S.pos=0;S.errs=0;S.hits=0;S.t0=null;S.dead=false;S.running=false;
+  var l=LESSONS[i];
+  $("lTitle").textContent=(i+1)+". "+l.t;
+  $("lGoal").textContent=l.g;
+  $("lTip").textContent=l.tip;
+  elResult.className="result";
+  renderRail();renderLine(false);updateStats();
+  save();
+}
+
+/* ---------- estatísticas ---------- */
+function updateStats(){
+  var mins=S.t0?(Date.now()-S.t0)/60000:0;
+  var wpm=(mins>0.02)?Math.round((S.hits/5)/mins):0;
+  var total=S.hits+S.errs;
+  var acc=total?Math.round(S.hits/total*100):100;
+  $("sWpm").textContent=wpm;$("sAcc").textContent=acc;$("sErr").textContent=S.errs;
+  $("accBox").className="stat "+(total<5?"":(acc>=95?"ok":(acc<85?"warn":"")));
+  var sec=Math.floor(mins*60);
+  $("sTime").textContent=Math.floor(sec/60)+":"+("0"+(sec%60)).slice(-2);
+}
+setInterval(function(){if(S.running&&!document.getElementById("scr-teclado").hidden)updateStats();},500);
+
+/* ---------- digitação ---------- */
+function handleChar(ch){
+  var line=LESSONS[S.li].lines[S.line];
+  if(S.pos>=line.length)return;
+  var want=line[S.pos];
+  if(ch===want){
+    if(!S.t0){S.t0=Date.now();S.running=true;}
+    S.pos++;S.hits++;S.dead=false;clearKeys("wrong");
+    if(S.pos>=line.length){finishLine();return;}
+    renderLine(false);updateStats();
+  }else{
+    if(/[\u00B4`\u005E~\u00A8]/.test(ch)&&want.normalize("NFD").length===2){S.dead=true;renderLine(false);return;}
+    S.errs++;S.dead=false;renderLine(true);updateStats();
+    var m=CHARMAP[ch];if(m&&KEYEL[m.id]){clearKeys("wrong");KEYEL[m.id].classList.add("wrong");}
+    if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+      elTarget.classList.remove("shake");void elTarget.offsetWidth;elTarget.classList.add("shake");
+    }
+  }
+}
+function finishLine(){
+  if(S.line+1<LESSONS[S.li].lines.length){
+    S.line++;S.pos=0;renderLine(false);updateStats();
+  }else{
+    renderLine(false);S.running=false;updateStats();
+    if(S.done.indexOf(S.li)<0)S.done.push(S.li);
+    save();renderRail();showResult();
+  }
+}
+function showResult(){
+  var total=S.hits+S.errs,acc=total?Math.round(S.hits/total*100):100;
+  var mins=S.t0?(Date.now()-S.t0)/60000:0,wpm=mins>0.02?Math.round((S.hits/5)/mins):0;
+  var msg=acc>=97?"Excelente. Praticamente sem erros — pode seguir para a próxima lição.":
+          acc>=90?"Muito bom. Repita esta lição uma vez para firmar o movimento dos dedos.":
+                  "Bom trabalho por ter chegado até o fim. Repita esta lição indo mais devagar: a velocidade vem depois.";
+  var hasNext=S.li+1<LESSONS.length;
+  elResult.innerHTML='<h2>Lição '+(S.li+1)+' concluída</h2><p>'+msg+'</p>'+
+    '<div class="stats"><div class="stat"><div class="k">Velocidade</div><div class="v">'+wpm+' <span style="font-size:14px;font-weight:400;color:var(--ink-3)">ppm</span></div></div>'+
+    '<div class="stat"><div class="k">Precisão</div><div class="v">'+acc+'%</div></div>'+
+    '<div class="stat"><div class="k">Letras certas</div><div class="v">'+S.hits+'</div></div>'+
+    '<div class="stat"><div class="k">Erros</div><div class="v">'+S.errs+'</div></div></div>'+
+    '<div class="btnrow"><button class="btn" id="btnNext">'+(hasNext?"Próxima lição":"Recomeçar do início")+'</button>'+
+    '<button class="btn ghost" id="btnAgain">Repetir esta lição</button></div>';
+  elResult.classList.add("show");
+  $("btnNext").onclick=function(){loadLesson(hasNext?S.li+1:0);focusInput();elResult.scrollIntoView({behavior:"smooth",block:"start"});};
+  $("btnAgain").onclick=function(){loadLesson(S.li);focusInput();};
+  elResult.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+/* ---------- entrada ---------- */
+function focusInput(){elCatch.focus({preventScroll:true});}
+elStage.addEventListener("mousedown",function(e){e.preventDefault();focusInput();});
+elCatch.addEventListener("focus",function(){elVeil.hidden=true;});
+elCatch.addEventListener("blur",function(){elVeil.hidden=false;});
+elCatch.addEventListener("input",function(){
+  var v=elCatch.value;elCatch.value="";
+  for(var i=0;i<v.length;i++)handleChar(v[i]);
+});
+elCatch.addEventListener("keydown",function(e){
+  if(e.key==="Dead"){S.dead=true;renderLine(false);return;}
+  if(e.key==="Backspace"){e.preventDefault();if(S.pos>0){S.pos--;renderLine(false);}}
+  if(e.key===" ")e.stopPropagation();
+});
+document.addEventListener("keydown",function(e){
+  if(e.key===" "&&e.target===document.body)e.preventDefault();
+});
+
+/* ---------- controles ---------- */
+var sizes=[26,32,38,46,56],si=2;
+document.documentElement.style.setProperty("--typesize",sizes[si]+"px");
+$("btnBigger").onclick=function(){si=Math.min(si+1,sizes.length-1);document.documentElement.style.setProperty("--typesize",sizes[si]+"px");focusInput();};
+$("btnSmaller").onclick=function(){si=Math.max(si-1,0);document.documentElement.style.setProperty("--typesize",sizes[si]+"px");focusInput();};
+$("btnKb").onclick=function(){var on=this.getAttribute("aria-pressed")==="true";this.setAttribute("aria-pressed",!on);elKb.classList.toggle("hidden",on);focusInput();};
+$("btnFingers").onclick=function(){var on=this.getAttribute("aria-pressed")==="true";this.setAttribute("aria-pressed",!on);elKb.classList.toggle("fingers",!on);focusInput();};
+
+buildKb();loadLesson(S.li);
+})();
+</script>
+<script>
+/* ===================== Planilha Amiga ===================== */
+(function(){
+"use strict";
+var COLS=["A","B","C","D","E","F","G","H"], NROWS=18;
+var cells={}, sel="A1", editing=false, clip=null, undoStack=[], mi=0, stepIdx=0, doneList=[];
+var TD={}, cache={}, lastAction="";
+
+var $=function(id){return document.getElementById(id);};
+var elGrid,elWrap,elFx,elRef,elStatus;
+
+/* ---------- utilidades ---------- */
+function colIdx(c){var n=0;for(var i=0;i<c.length;i++)n=n*26+(c.charCodeAt(i)-64);return n-1;}
+function colName(i){var s="";i++;while(i>0){var r=(i-1)%26;s=String.fromCharCode(65+r)+s;i=Math.floor((i-1)/26);}return s;}
+function parseRef(r){var m=/^([A-Z]+)(\d+)$/.exec(r);return m?{c:colIdx(m[1]),r:parseInt(m[2],10)}:null;}
+function refOf(ci,ri){return colName(ci)+ri;}
+function raw(r){var c=cells[r];return c&&c.v!=null?c.v:"";}
+function toNum(s){
+  if(typeof s==="number")return s;
+  s=String(s).trim(); if(s==="")return null;
+  var t=s.replace(/^R\$\s*/,"").replace(/\s/g,"").replace(/%$/,"");
+  if(t.indexOf(",")>=0) t=t.replace(/\./g,"").replace(",",".");
+  if(!/^-?\d*\.?\d+$/.test(t))return null;
+  var n=parseFloat(t); return isNaN(n)?null:n;
+}
+function isN(v){return typeof v==="number"&&isFinite(v);}
+
+/* ---------- motor de calculo ---------- */
+function flat(a){var out=[];for(var i=0;i<a.length;i++){var v=a[i];if(Object.prototype.toString.call(v)==="[object Array]")out=out.concat(flat(v));else out.push(v);}return out;}
+function nums(a){return flat(a).filter(isN);}
+var FN={};
+FN.SOMA=function(){var n=nums(arguments),s=0;for(var i=0;i<n.length;i++)s+=n[i];return s;};
+FN.MEDIA=function(){var n=nums(arguments);if(!n.length)return "#DIV/0!";var s=0;for(var i=0;i<n.length;i++)s+=n[i];return s/n.length;};
+FN["MÉDIA"]=FN.MEDIA;
+FN.MAXIMO=function(){var n=nums(arguments);return n.length?Math.max.apply(null,n):0;};
+FN["MÁXIMO"]=FN.MAXIMO;
+FN.MINIMO=function(){var n=nums(arguments);return n.length?Math.min.apply(null,n):0;};
+FN["MÍNIMO"]=FN.MINIMO;
+FN.CONTNUM=function(){return nums(arguments).length;};
+FN.SE=function(c,a,b){return c?a:(b===undefined?false:b);};
+FN.ARRED=function(n,d){d=d||0;var p=Math.pow(10,d);return Math.round(n*p)/p;};
+FN.ABS=function(n){return Math.abs(n);};
+FN.HOJE=function(){var d=new Date();return d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();};
+
+function calc(ref,seen){
+  if(cache.hasOwnProperty(ref))return cache[ref];
+  var c=cells[ref];
+  if(!c||c.v===""||c.v==null)return "";
+  var v=String(c.v);
+  if(v.charAt(0)!=="="){var n=toNum(v);return n===null?v:n;}
+  if(seen[ref])return "#CIRC!";
+  seen[ref]=1;
+  var out;
+  try{ out=evalFormula(v.slice(1),seen); }catch(e){ out=(e&&e.err)?e.err:"#ERRO!"; }
+  seen[ref]=0;
+  if(typeof out==="number"&&!isFinite(out))out="#DIV/0!";
+  else if(typeof out==="number"&&isNaN(out))out="#VALOR!";
+  if(out===true)out="VERDADEIRO";
+  if(out===false)out="FALSO";
+  cache[ref]=out;
+  return out;
+}
+function evalFormula(e,seen){
+  var lits=[],rgs=[];
+  e=e.replace(/"([^"]*)"/g,function(m,s){lits.push(s);return "$$"+(lits.length-1)+"$$";});
+  e=e.replace(/(\d),(\d)/g,"$1.$2");
+  e=e.replace(/;/g,",");
+  e=e.toUpperCase();
+  e=e.replace(/<>/g,"!=");
+  e=e.replace(/(^|[^<>=!])=(?!=)/g,"$1==");
+  e=e.replace(/\bCONT\.N[ÚU]M\s*\(/g,'FN["CONTNUM"](');
+  e=e.replace(/\b(SOMA|MÉDIA|MEDIA|MÁXIMO|MAXIMO|MÍNIMO|MINIMO|SE|ARRED|ABS|HOJE)\s*\(/g,function(m,n){return 'FN["'+n+'"](';});
+  e=e.replace(/\b([A-Z]{1,2}\d{1,3}):([A-Z]{1,2}\d{1,3})\b/g,function(m,a,b){rgs.push([a,b]);return "@@"+(rgs.length-1)+"@@";});
+  e=e.replace(/\b([A-Z]{1,2}\d{1,3})\b/g,'CV("$1")');
+  e=e.replace(/@@(\d+)@@/g,function(m,i){return 'RG("'+rgs[+i][0]+'","'+rgs[+i][1]+'")';});
+  e=e.replace(/\$\$(\d+)\$\$/g,function(m,i){return JSON.stringify(lits[+i]);});
+  var CV=function(r){var v=calc(r,seen);if(typeof v==="string"&&/^#.+!$/.test(v))throw {err:v};return v===""?0:v;};
+  var RG=function(a,b){
+    var p=parseRef(a),q=parseRef(b);if(!p||!q)return [];
+    var out=[],c1=Math.min(p.c,q.c),c2=Math.max(p.c,q.c),r1=Math.min(p.r,q.r),r2=Math.max(p.r,q.r);
+    for(var ci=c1;ci<=c2;ci++)for(var ri=r1;ri<=r2;ri++){var v=calc(refOf(ci,ri),seen);if(v!=="")out.push(v);}
+    return out;
+  };
+  return (new Function("FN","RG","CV","return ("+e+")"))(FN,RG,CV);
+}
+function value(ref){return calc(ref,{});}
+function num(ref){var v=value(ref);return isN(v)?v:NaN;}
+
+/* ---------- exibicao ---------- */
+function fmtNum(n,fmt){
+  if(fmt==="moeda")return "R$ "+n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  if(fmt==="porc")return (n*100).toLocaleString("pt-BR",{maximumFractionDigits:1})+"%";
+  return n.toLocaleString("pt-BR",{maximumFractionDigits:2});
+}
+function shiftRefs(f,dr,dc){
+  return f.replace(/\b([A-Z]{1,2})(\d{1,3})\b/g,function(m,c,r){
+    var ci=colIdx(c)+dc,ri=parseInt(r,10)+dr;
+    if(ci<0||ri<1)return "#REF!";
+    return colName(ci)+ri;
+  });
+}
+
+/* ---------- grade ---------- */
+function buildGrid(){
+  var html="<tr><th class='corner'></th>";
+  for(var i=0;i<COLS.length;i++)html+="<th class='colh' data-c='"+i+"'>"+COLS[i]+"</th>";
+  html+="</tr>";
+  for(var r=1;r<=NROWS;r++){
+    html+="<tr><th class='rowh' data-r='"+r+"'>"+r+"</th>";
+    for(var c=0;c<COLS.length;c++)html+="<td data-ref='"+refOf(c,r)+"'></td>";
+    html+="</tr>";
+  }
+  elGrid.innerHTML=html;
+  TD={};
+  var tds=elGrid.querySelectorAll("td");
+  for(var k=0;k<tds.length;k++)TD[tds[k].getAttribute("data-ref")]=tds[k];
+  elGrid.addEventListener("mousedown",function(e){
+    var td=e.target.closest?e.target.closest("td"):null;
+    if(!td||!td.getAttribute("data-ref"))return;
+    if(editing)commitEdit();
+    select(td.getAttribute("data-ref"));
+    elWrap.focus({preventScroll:true});
+  });
+  elGrid.addEventListener("dblclick",function(e){
+    var td=e.target.closest?e.target.closest("td"):null;
+    if(td&&td.getAttribute("data-ref")){select(td.getAttribute("data-ref"));startEdit(null);}
+  });
+}
+function render(){
+  cache={};
+  for(var ref in TD){
+    var td=TD[ref],c=cells[ref],cls="";
+    var v=value(ref),txt="";
+    if(isN(v)){txt=fmtNum(v,c&&c.fmt);cls+=" num";}
+    else if(typeof v==="string"&&v.charAt(0)==="#"&&v.length>3){txt=v;cls+=" err";}
+    else{txt=v===""?"":String(v);}
+    if(c&&c.b)cls+=" bold";
+    if(c&&c.i)cls+=" ital";
+    if(c&&c.bg)cls+=" "+c.bg;
+    if(ref===sel)cls+=" sel";
+    td.className=cls.replace(/^\s+/,"");
+    td.textContent=txt;
+  }
+  var p=parseRef(sel),ths=elGrid.querySelectorAll("th");
+  for(var i=0;i<ths.length;i++){
+    var th=ths[i];th.classList.remove("hl");
+    if(th.getAttribute("data-c")!==null&&+th.getAttribute("data-c")===p.c)th.classList.add("hl");
+    if(th.getAttribute("data-r")!==null&&+th.getAttribute("data-r")===p.r)th.classList.add("hl");
+  }
+  elRef.textContent=sel;
+  elFx.value=raw(sel);
+  syncRibbon();
+  status();
+}
+function status(){
+  var r=raw(sel),v=value(sel),c=cells[sel],s;
+  if(r==="")s="Célula <code>"+sel+"</code> — vazia. Digite um texto, um número ou uma fórmula começando com =";
+  else if(r.charAt(0)==="=")s="Célula <code>"+sel+"</code> guarda a fórmula <code>"+r+"</code> e mostra <b>"+(isN(v)?fmtNum(v,c&&c.fmt):v)+"</b>";
+  else if(isN(v))s="Célula <code>"+sel+"</code> — número"+(c&&c.fmt==="moeda"?" em formato de dinheiro":(c&&c.fmt==="porc"?" em porcentagem":""));
+  else s="Célula <code>"+sel+"</code> — texto";
+  if(lastAction)s+=" · "+lastAction;
+  elStatus.innerHTML=s;
+}
+function syncRibbon(){
+  var c=cells[sel]||{};
+  $("xB").classList.toggle("on",!!c.b);
+  $("xI").classList.toggle("on",!!c.i);
+  $("xMoeda").classList.toggle("on",c.fmt==="moeda");
+  $("xPorc").classList.toggle("on",c.fmt==="porc");
+}
+function select(ref){sel=ref;render();keepVisible();check();}
+function keepVisible(){
+  var td=TD[sel];if(!td)return;
+  var tr=td.getBoundingClientRect(),wr=elWrap.getBoundingClientRect();
+  if(tr.top<wr.top+30)elWrap.scrollTop-=(wr.top+30-tr.top);
+  if(tr.bottom>wr.bottom)elWrap.scrollTop+=(tr.bottom-wr.bottom);
+  if(tr.left<wr.left+44)elWrap.scrollLeft-=(wr.left+44-tr.left);
+  if(tr.right>wr.right)elWrap.scrollLeft+=(tr.right-wr.right);
+}
+function move(dr,dc){
+  var p=parseRef(sel);
+  select(refOf(Math.max(0,Math.min(COLS.length-1,p.c+dc)),Math.max(1,Math.min(NROWS,p.r+dr))));
+}
+
+/* ---------- edicao ---------- */
+function snapshot(){undoStack.push(JSON.stringify(cells));if(undoStack.length>60)undoStack.shift();}
+function undo(){if(!undoStack.length)return;cells=JSON.parse(undoStack.pop());lastAction="desfeito";render();check();}
+function setCell(ref,v){
+  var c=cells[ref];
+  if(v===""||v==null){if(c){c.v="";if(!c.b&&!c.i&&!c.bg&&!c.fmt)delete cells[ref];}}
+  else{if(!c)c=cells[ref]={v:"",b:false,i:false,bg:"",fmt:""};c.v=v;}
+}
+function ensure(ref){if(!cells[ref])cells[ref]={v:"",b:false,i:false,bg:"",fmt:""};return cells[ref];}
+function startEdit(initial){
+  if(editing)return;
+  var td=TD[sel];if(!td)return;
+  editing=true;
+  td.textContent="";
+  var inp=document.createElement("input");
+  inp.className="cellinput";inp.setAttribute("spellcheck","false");inp.setAttribute("autocomplete","off");
+  inp.value=initial!=null?initial:raw(sel);
+  td.appendChild(inp);
+  inp.focus();
+  try{inp.setSelectionRange(inp.value.length,inp.value.length);}catch(e){}
+  inp.addEventListener("input",function(){elFx.value=inp.value;});
+  inp.addEventListener("keydown",function(e){
+    if(e.key==="Enter"){e.preventDefault();commitEdit();move(1,0);elWrap.focus({preventScroll:true});}
+    else if(e.key==="Tab"){e.preventDefault();commitEdit();move(0,1);elWrap.focus({preventScroll:true});}
+    else if(e.key==="Escape"){e.preventDefault();editing=false;render();elWrap.focus({preventScroll:true});}
+    e.stopPropagation();
+  });
+  inp.addEventListener("blur",function(){if(editing)commitEdit();});
+}
+function commitEdit(){
+  if(!editing)return;
+  var inp=TD[sel].querySelector("input"),v=inp?inp.value:"";
+  editing=false;
+  snapshot();
+  setCell(sel,v.trim());
+  lastAction="";
+  render();check();
+}
+function clearCell(){snapshot();setCell(sel,"");lastAction="célula apagada";render();check();}
+function paste(){
+  if(!clip)return;
+  var a=parseRef(clip.ref),b=parseRef(sel),v=clip.v;
+  if(v.charAt(0)==="=")v="="+shiftRefs(v.slice(1),b.r-a.r,b.c-a.c);
+  snapshot();
+  var c=ensure(sel);
+  c.v=v;c.b=!!clip.f.b;c.i=!!clip.f.i;c.bg=clip.f.bg||"";c.fmt=clip.f.fmt||"";
+  lastAction="colado em "+sel;
+  render();check();
+}
+function toggle(p){snapshot();var c=ensure(sel);c[p]=!c[p];render();check();}
+function setFmt(f){snapshot();ensure(sel).fmt=f;render();check();}
+function setBg(b){snapshot();ensure(sel).bg=b;render();check();}
+function onKey(e){
+  if(editing)return;
+  var k=e.key;
+  if(e.ctrlKey||e.metaKey){
+    if(k==="c"||k==="C"){clip={ref:sel,v:raw(sel),f:JSON.parse(JSON.stringify(cells[sel]||{}))};lastAction="copiado de "+sel;render();check();e.preventDefault();}
+    else if(k==="v"||k==="V"){paste();e.preventDefault();}
+    else if(k==="z"||k==="Z"){undo();e.preventDefault();}
+    else if(k==="b"||k==="B"){toggle("b");e.preventDefault();}
+    return;
+  }
+  if(k==="ArrowUp"){move(-1,0);e.preventDefault();}
+  else if(k==="ArrowDown"){move(1,0);e.preventDefault();}
+  else if(k==="ArrowLeft"){move(0,-1);e.preventDefault();}
+  else if(k==="ArrowRight"){move(0,1);e.preventDefault();}
+  else if(k==="Enter"||k==="F2"){startEdit(null);e.preventDefault();}
+  else if(k==="Tab"){move(0,e.shiftKey?-1:1);e.preventDefault();}
+  else if(k==="Delete"||k==="Backspace"){clearCell();e.preventDefault();}
+  else if(k.length===1){startEdit(k);e.preventDefault();}
+}
+
+/* ---------- missoes ---------- */
+function txt(ref){return String(raw(ref)).trim();}
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();}
+function like(ref,s){return norm(txt(ref))===norm(s);}
+function isText(ref){var t=txt(ref);return t.length>0&&toNum(t)===null&&t.charAt(0)!=="=";}
+function hasF(ref,part){var t=txt(ref).toUpperCase();return t.charAt(0)==="="&&t.indexOf(part.toUpperCase())>=0;}
+function near(a,b){return isFinite(a)&&Math.abs(a-b)<0.005;}
+
+var MISSOES=[
+{t:"Conhecendo a planilha",
+ g:"Uma planilha é uma tabela gigante. As colunas têm letras (A, B, C…) e as linhas têm números. O encontro dos dois é a célula: A1, B2, C5.",
+ tip:"Clique numa célula para selecioná-la. O nome dela aparece na caixinha cinza, à esquerda da barra de fórmulas.",
+ setup:{},
+ steps:[
+  {txt:"Clique na célula B2", ok:function(){return sel==="B2";}},
+  {txt:"Agora clique na célula C5", ok:function(){return sel==="C5";}},
+  {txt:"Use as setas do teclado para chegar até a célula E7", ok:function(){return sel==="E7";}},
+  {txt:"Escreva seu nome na célula A1 e aperte Enter", ok:function(){return isText("A1")&&txt("A1").length>=2;}}
+ ]},
+
+{t:"Escrevendo uma lista",
+ g:"Antes de calcular qualquer coisa, a planilha precisa de dados. Texto encosta na esquerda da célula; número encosta na direita — é assim que ela avisa que entendeu o que você digitou.",
+ tip:"Digite e aperte Enter: a seleção desce sozinha para a célula de baixo. Preço com centavos usa vírgula: 24,90.",
+ setup:{},
+ steps:[
+  {txt:"Escreva Produto na célula A1", ok:function(){return like("A1","produto");}},
+  {txt:"Escreva Preço na célula B1", ok:function(){return like("B1","preco");}},
+  {txt:"Escreva o nome de um produto em A2 (por exemplo: Arroz)", ok:function(){return isText("A2");}},
+  {txt:"Escreva o preço dele em B2, com vírgula (ex.: 24,90)", ok:function(){return num("B2")>0;}},
+  {txt:"Faça o mesmo nas linhas 3 e 4: produto e preço", ok:function(){return isText("A3")&&num("B3")>0&&isText("A4")&&num("B4")>0;}}
+ ]},
+
+{t:"Toda conta começa com =",
+ g:"Esta é a regra mais importante do Excel. Sem o sinal de igual, a planilha entende que você escreveu um texto. Com ele, ela calcula.",
+ tip:"Os sinais são: + soma, - subtrai, * multiplica e / divide.",
+ setup:{},
+ steps:[
+  {txt:"Na célula B2, escreva  =10+5  e aperte Enter", ok:function(){return txt("B2").charAt(0)==="="&&num("B2")===15;}},
+  {txt:"Escreva 20 na célula B4 e 4 na célula B5", ok:function(){return num("B4")===20&&num("B5")===4;}},
+  {txt:"Na célula B6, escreva  =B4*B5  para multiplicar as duas", ok:function(){return hasF("B6","B4")&&num("B6")===80;}},
+  {txt:"Troque o 20 da célula B4 por 30 e veja o resultado se corrigir sozinho", ok:function(){return num("B4")===30&&num("B6")===120;}}
+ ]},
+
+{t:"A função SOMA",
+ g:"Somar célula por célula funciona, mas dá trabalho. A função SOMA soma um intervalo inteiro de uma vez: os dois pontos querem dizer “até”.",
+ tip:"=SOMA(B2:B6) lê-se “some tudo de B2 até B6”. Mudou um valor no meio? O total se corrige sozinho.",
+ setup:{A1:"Gastos da semana",B1:"Valor",A2:"Feira",B2:"186,40",A3:"Farmácia",B3:"72,90",A4:"Transporte",B4:"48",A5:"Gás",B5:"120",A6:"Internet",B6:"99,90"},
+ steps:[
+  {txt:"Clique na célula B7, logo abaixo do último valor", ok:function(){return sel==="B7";}},
+  {txt:"Escreva  =SOMA(B2:B6)  e aperte Enter", ok:function(){return hasF("B7","SOMA")&&near(num("B7"),527.2);}},
+  {txt:"Escreva a palavra Total na célula A7", ok:function(){return like("A7","total");}},
+  {txt:"Troque o valor da Feira (B2) por 200 e confira o total mudando", ok:function(){return num("B2")===200&&near(num("B7"),540.8);}}
+ ]},
+
+{t:"Média, maior e menor",
+ g:"Além de somar, a planilha responde perguntas sobre um conjunto de números: qual a média, qual o maior e qual o menor.",
+ tip:"As três funcionam igual à SOMA: nome da função, parênteses e o intervalo dentro.",
+ setup:{A1:"Aluno",B1:"Nota",A2:"Ana",B2:"7,5",A3:"Bruno",B3:"9",A4:"Carla",B4:"6",A5:"Diego",B5:"8,5",A6:"Elisa",B6:"10",D1:"Resultados"},
+ steps:[
+  {txt:"Em D2, escreva  =MÉDIA(B2:B6)", ok:function(){return hasF("D2","M")&&near(num("D2"),8.2);}},
+  {txt:"Em D3, escreva  =MÁXIMO(B2:B6)  para achar a maior nota", ok:function(){return num("D3")===10;}},
+  {txt:"Em D4, escreva  =MÍNIMO(B2:B6)  para achar a menor nota", ok:function(){return num("D4")===6;}},
+  {txt:"Escreva Média em C2, Maior em C3 e Menor em C4", ok:function(){return like("C2","media")&&like("C3","maior")&&like("C4","menor");}}
+ ]},
+
+{t:"Copiar e colar fórmula",
+ g:"Aqui está a mágica do Excel: ao colar uma fórmula na linha de baixo, ela se ajusta sozinha. Você escreve uma vez e usa em todas as linhas.",
+ tip:"Selecione a célula e aperte Ctrl e C juntos para copiar. Vá para outra célula e aperte Ctrl e V para colar.",
+ setup:{A1:"Item",B1:"Quantidade",C1:"Preço",D1:"Total",A2:"Caderno",B2:"3",C2:"12,50",A3:"Caneta",B3:"10",C3:"2,80",A4:"Mochila",B4:"1",C4:"89,90",A5:"Lápis",B5:"6",C5:"1,50"},
+ steps:[
+  {txt:"Em D2, escreva  =B2*C2  (quantidade vezes preço)", ok:function(){return hasF("D2","B2")&&near(num("D2"),37.5);}},
+  {txt:"Com D2 selecionada, aperte Ctrl e C juntos", ok:function(){return !!clip&&clip.ref==="D2";}},
+  {txt:"Clique em D3 e aperte Ctrl e V — repare que virou =B3*C3", ok:function(){return near(num("D3"),28);}},
+  {txt:"Cole também em D4 e em D5", ok:function(){return near(num("D4"),89.9)&&near(num("D5"),9);}},
+  {txt:"Em D6, some tudo com  =SOMA(D2:D5)", ok:function(){return hasF("D6","SOMA")&&near(num("D6"),164.4);}}
+ ]},
+
+{t:"Deixando a planilha bonita",
+ g:"Formatar não é enfeite: negrito e cor mostram na hora o que é título e o que é resultado. E o formato de dinheiro coloca o R$ e os centavos sozinho.",
+ tip:"Selecione a célula e use os botões de cima: N para negrito, R$ para dinheiro e os quadradinhos coloridos para pintar o fundo.",
+ setup:{A1:"Produto",B1:"Preço",A2:"Arroz",B2:"27,90",A3:"Feijão",B3:"9,45",A4:"Café",B4:"18,70",A5:"Total",B5:"=SOMA(B2:B4)"},
+ steps:[
+  {txt:"Deixe A1 e B1 em negrito (selecione a célula e clique no N)", ok:function(){return cells.A1&&cells.A1.b&&cells.B1&&cells.B1.b;}},
+  {txt:"Coloque o formato R$ nas células B2, B3 e B4", ok:function(){return ["B2","B3","B4"].every(function(r){return cells[r]&&cells[r].fmt==="moeda";});}},
+  {txt:"Coloque o formato R$ também no total, em B5", ok:function(){return cells.B5&&cells.B5.fmt==="moeda";}},
+  {txt:"Pinte a célula B5 com uma cor de fundo", ok:function(){return cells.B5&&!!cells.B5.bg;}},
+  {txt:"Deixe a linha do total (A5 e B5) em negrito", ok:function(){return cells.A5&&cells.A5.b&&cells.B5&&cells.B5.b;}}
+ ]},
+
+{t:"Porcentagem e desconto",
+ g:"Porcentagem no Excel é sempre multiplicação. Tirar 10% de um valor é multiplicar por 0,9; acrescentar 10% é multiplicar por 1,1.",
+ tip:"Escrever =B2*(1-C2) quer dizer: o preço menos a parte do desconto.",
+ setup:{A1:"Produto",B1:"Preço",C1:"Desconto",D1:"Preço final",A2:"Liquidificador",B2:"189,90",C2:"0,1",A3:"Ventilador",B3:"249,00",C3:"0,15"},
+ steps:[
+  {txt:"Em D2, escreva  =B2*(1-C2)  para tirar o desconto", ok:function(){return hasF("D2","B2")&&near(num("D2"),170.91);}},
+  {txt:"Copie D2 com Ctrl+C e cole em D3 com Ctrl+V", ok:function(){return near(num("D3"),211.65);}},
+  {txt:"Deixe C2 e C3 no formato de porcentagem (botão %)", ok:function(){return cells.C2&&cells.C2.fmt==="porc"&&cells.C3&&cells.C3.fmt==="porc";}},
+  {txt:"Deixe B2, B3, D2 e D3 no formato R$", ok:function(){return ["B2","B3","D2","D3"].every(function(r){return cells[r]&&cells[r].fmt==="moeda";});}}
+ ]},
+
+{t:"Projeto final: orçamento do mês",
+ g:"Agora é você quem monta a planilha inteira, do zero, juntando tudo o que treinou. É exatamente o que se faz para controlar as contas de casa.",
+ tip:"Ordem sugerida: título na linha 1, cabeçalho na linha 2, os gastos nas linhas 3 a 6 e o total na linha 7.",
+ setup:{},
+ steps:[
+  {txt:"Escreva um título na célula A1 (ex.: Orçamento de setembro)", ok:function(){return isText("A1")&&txt("A1").length>=5;}},
+  {txt:"Escreva Descrição em A2 e Valor em B2", ok:function(){return like("A2","descricao")&&like("B2","valor");}},
+  {txt:"Preencha quatro gastos nas linhas 3 a 6, com descrição e valor", ok:function(){return [3,4,5,6].every(function(r){return isText("A"+r)&&num("B"+r)>0;});}},
+  {txt:"Escreva Total em A7 e use  =SOMA(B3:B6)  em B7", ok:function(){return like("A7","total")&&hasF("B7","SOMA")&&num("B7")>0;}},
+  {txt:"Deixe A1 em negrito e as células B3 até B7 no formato R$", ok:function(){return cells.A1&&cells.A1.b&&["B3","B4","B5","B6","B7"].every(function(r){return cells[r]&&cells[r].fmt==="moeda";});}},
+  {txt:"Pinte a linha do total para destacar", ok:function(){return (cells.A7&&!!cells.A7.bg)||(cells.B7&&!!cells.B7.bg);}}
+ ]},
+
+{t:"Planilha livre",
+ g:"Sem missão e sem correção: use esta planilha para treinar o que quiser ou montar uma conta de verdade. Tudo o que você aprendeu funciona aqui.",
+ tip:"Se bagunçar, o botão Recomeçar a missão limpa tudo e devolve a planilha vazia.",
+ setup:{},
+ steps:[]}
+];
+
+/* ---------- controle das missoes ---------- */
+var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+try{var sv=store.get("planilha-amiga-v1");if(sv){var o=JSON.parse(sv);if(o&&o.done)doneList=o.done;}}catch(e){}
+function save(){store.set("planilha-amiga-v1",JSON.stringify({done:doneList}));}
+
+function loadMissao(i){
+  mi=i;stepIdx=0;cells={};undoStack=[];clip=null;editing=false;lastAction="";
+  var m=MISSOES[i];
+  for(var ref in m.setup)setCell(ref,m.setup[ref]);
+  sel="A1";
+  $("xTitle").textContent=(i<MISSOES.length-1?(i+1)+". ":"")+m.t;
+  $("xGoal").textContent=m.g;
+  $("xTip").textContent=m.tip;
+  $("xDoneMsg").hidden=true;
+  renderRail();renderSteps();render();check();
+  save();
+}
+function renderRail(){
+  var rail=$("xRail");rail.innerHTML="";
+  MISSOES.forEach(function(m,i){
+    var b=document.createElement("button");
+    b.className="chip"+(doneList.indexOf(i)>=0?" done":"");
+    b.setAttribute("aria-current",i===mi?"true":"false");
+    var n=(i===MISSOES.length-1)?"★":(doneList.indexOf(i)>=0?"✓":(i+1));
+    b.innerHTML='<span class="num">'+n+"</span>"+m.t;
+    b.onclick=function(){loadMissao(i);};
+    rail.appendChild(b);
+  });
+  var tot=MISSOES.length-1;
+  $("xDone").textContent=doneList.filter(function(i){return i<tot;}).length+" de "+tot+" concluídas";
+}
+function renderSteps(){
+  var ol=$("xSteps"),st=MISSOES[mi].steps;
+  ol.innerHTML="";
+  if(!st.length){ol.innerHTML='<li class="now"><span class="box">★</span><span class="txt">Modo livre — escreva o que quiser, nada é corrigido aqui.</span></li>';return;}
+  st.forEach(function(s,i){
+    var li=document.createElement("li");
+    li.className=i<stepIdx?"ok":(i===stepIdx?"now":"");
+    li.innerHTML='<span class="box">'+(i<stepIdx?"✓":(i+1))+'</span><span class="txt">'+s.txt+"</span>";
+    ol.appendChild(li);
+  });
+}
+function check(){
+  var st=MISSOES[mi].steps;
+  if(!st.length)return;
+  var moved=false;
+  while(stepIdx<st.length){
+    var r=false;
+    try{r=!!st[stepIdx].ok();}catch(e){r=false;}
+    if(!r)break;
+    stepIdx++;moved=true;
+  }
+  if(!moved)return;
+  renderSteps();
+  if(stepIdx<st.length)return;
+  if(doneList.indexOf(mi)<0)doneList.push(mi);
+  save();renderRail();
+  var hasNext=mi+1<MISSOES.length,d=$("xDoneMsg");
+  d.innerHTML="Missão concluída! "+(hasNext?'<button class="btn" style="margin-top:12px;display:block" id="xNext">Ir para a próxima missão</button>':"Você terminou todas as missões.");
+  d.hidden=false;
+  var nb=$("xNext");if(nb)nb.onclick=function(){loadMissao(mi+1);};
+}
+
+/* ---------- inicializacao ---------- */
+function init(){
+  elGrid=$("xGrid");elWrap=$("xWrap");elFx=$("xFx");elRef=$("xRef");elStatus=$("xStatus");
+  buildGrid();
+  elWrap.addEventListener("keydown",onKey);
+  elFx.addEventListener("keydown",function(e){
+    if(e.key==="Enter"){e.preventDefault();snapshot();setCell(sel,elFx.value.trim());render();check();elWrap.focus({preventScroll:true});}
+    else if(e.key==="Escape"){elFx.value=raw(sel);elWrap.focus({preventScroll:true});}
+    e.stopPropagation();
+  });
+  $("xB").onclick=function(){toggle("b");elWrap.focus({preventScroll:true});};
+  $("xI").onclick=function(){toggle("i");elWrap.focus({preventScroll:true});};
+  $("xMoeda").onclick=function(){setFmt("moeda");elWrap.focus({preventScroll:true});};
+  $("xPorc").onclick=function(){setFmt("porc");elWrap.focus({preventScroll:true});};
+  $("xGeral").onclick=function(){setFmt("");elWrap.focus({preventScroll:true});};
+  $("xClear").onclick=function(){clearCell();elWrap.focus({preventScroll:true});};
+  $("xUndo").onclick=function(){undo();elWrap.focus({preventScroll:true});};
+  $("xReset").onclick=function(){loadMissao(mi);elWrap.focus({preventScroll:true});};
+  var sw=$("xColors").querySelectorAll(".sw");
+  for(var i=0;i<sw.length;i++)(function(b){b.onclick=function(){setBg(b.getAttribute("data-bg")||"");elWrap.focus({preventScroll:true});};})(sw[i]);
+  loadMissao(0);
+}
+window.PLANILHA={init:function(){if(!elGrid)init();},focus:function(){if(elWrap)elWrap.focus({preventScroll:true});}};
+})();
+
+/* ===================== navegacao entre telas ===================== */
+(function(){
+var screens=["home","teclado","planilha"];
+function go(name,push){
+  if(screens.indexOf(name)<0)name="home";
+  screens.forEach(function(s){document.getElementById("scr-"+s).hidden=(s!==name);});
+  if(name==="planilha"&&window.PLANILHA){window.PLANILHA.init();window.PLANILHA.focus();}
+  if(push!==false)location.hash=(name==="home"?"#":"#/"+name);
+  window.scrollTo(0,0);
+}
+function fromHash(){var h=location.hash.replace(/^#\/?/,"");return h||"home";}
+document.addEventListener("click",function(e){
+  var t=e.target.closest?e.target.closest("[data-go]"):null;
+  if(t){e.preventDefault();go(t.getAttribute("data-go"));}
+});
+window.addEventListener("hashchange",function(){go(fromHash(),false);});
+go(fromHash(),false);
+})();
+</script>
+</body>
+</html>
